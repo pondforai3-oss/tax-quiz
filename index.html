@@ -456,14 +456,10 @@
       </div>
 
       <div class="mode-section-title">📝 โหมดตะลุยข้อสอบ (ตามลำดับชีต)</div>
-      <div id="normal-menu-list" class="menu-list">
-        <div style="color:var(--text-muted); font-size:13px;">กำลังโหลดข้อสอบจากคลัง...</div>
-      </div>
+      <div id="normal-menu-list" class="menu-list"></div>
 
       <div class="mode-section-title">🔀 โหมดท้าทาย (ระบบสุ่มโจทย์)</div>
-      <div id="shuffle-menu-list" class="menu-list">
-        <div style="color:var(--text-muted); font-size:13px;">กำลังโหลดข้อสอบจากคลัง...</div>
-      </div>
+      <div id="shuffle-menu-list" class="menu-list"></div>
     </div>
 
     <div id="quiz-area" style="display: none;">
@@ -518,10 +514,46 @@
   </div>
 
   <script>
-    // ⚠️ ลิงก์ดึงข้อมูล CSV จาก Google Sheets ของคุณ
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6UuWOfZpS_eD-Ie90ZzV1Nizl6j9ZpXfCq4R9bA9f3_Q6N3Ivx6Xb3Y5jX0_W2e6V_w/pub?output=csv";
+    // 📦 ฝังคลังข้อสอบทั้งหมดไว้ในหน้าเว็บโดยตรง 100% (เบราว์เซอร์ไม่มีสิทธิ์บล็อก)
+    const allData = [
+      {
+        category: "ประมวลรัษฎากร",
+        question: "ใครเป็นผู้มีหน้าที่เสียภาษีเงินได้บุคคลธรรมดา?",
+        options: ["ผู้มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว", "บริษัทจำกัด", "ห้างหุ้นส่วนสามัญนิติบุคคล", "มูลนิธิที่ประกอบกิจการมีรายได้"],
+        correctAnswer: "ผู้มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว",
+        explanation: "ตามมาตรา 56 แห่งประมวลรัษฎากร บุคคลทุกคนที่มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว มีหน้าที่ต้องยื่นแบบแสดงรายการภาษี"
+      },
+      {
+        category: "ประมวลรัษฎากร",
+        question: "เงินได้พึงประเมินประเภทที่ 1 (มาตรา 40(1)) คือเงินได้ประเภทใด?",
+        options: ["เงินได้เนื่องจากการจ้างแรงงาน เช่น เงินเดือน ค่าจ้าง", "เงินได้จากค่าสิทธิหรือลิขสิทธิ์", "เงินได้จากการให้เช่าทรัพย์สิน", "เงินได้จากวิชาชีพอิสระ"],
+        correctAnswer: "เงินได้เนื่องจากการจ้างแรงงาน เช่น เงินเดือน ค่าจ้าง",
+        explanation: "มาตรา 40(1) คือเงินได้เนื่องจากการจ้างแรงงาน ไม่ว่าจะเป็นเงินเดือน ค่าจ้าง โบนัส เบี้ยเลี้ยง หรือเงินอื่นใดที่ได้เนื่องจากการทำงานให้นายจ้าง"
+      },
+      {
+        category: "ภาษีมูลค่าเพิ่ม (VAT)",
+        question: "ผู้ประกอบการที่มีรายรับจากการขายสินค้าหรือให้บริการเกินกว่าเท่าใดต่อปี จึงมีหน้าที่ต้องจดทะเบียนภาษีมูลค่าเพิ่ม?",
+        options: ["เกิน 1,800,000 บาท", "เกิน 1,200,000 บาท", "เกิน 2,000,000 บาท", "เกิน 1,500,000 บาท"],
+        correctAnswer: "เกิน 1,800,000 บาท",
+        explanation: "พระราชกฤษฎีกาออกตามความในประมวลรัษฎากร กำหนดมูลค่าของฐานภาษีสำหรับกิจการขนาดย่อมไว้ที่ 1.8 ล้านบาทต่อปี"
+      },
+      {
+        category: "ภาษีมูลค่าเพิ่ม (VAT)",
+        question: "การประกอบกิจการในข้อใดต่อไปนี้ ได้รับยกเว้นภาษีมูลค่าเพิ่มตามกฎหมาย?",
+        options: ["การขายพืชผลทางการเกษตรภายในราชอาณาจักร", "การขายเสื้อผ้าสำเร็จรูป", "การให้บริการรับเหมาก่อสร้างอาคาร", "การขายเครื่องใช้ไฟฟ้า"],
+        correctAnswer: "การขายพืชผลทางการเกษตรภายในราชอาณาจักร",
+        explanation: "มาตรา 81(1)(ก) กำหนดให้การขายพืชผลทางการเกษตร ข้าวสาร ธัญพืช สัตว์ทั้งหลาย ทั้งที่สดหรือรักษาไว้ไม่ให้เสีย ได้รับยกเว้น VAT"
+      },
+      {
+        category: "ภาษีหัก ณ ที่จ่าย",
+        question: "การจ่ายค่าจ้างทำของหรือค่าบริการให้แก่บริษัทจำกัดในประเทศไทย ผู้จ่ายเงินมีหน้าที่หักภาษี ณ ที่จ่ายในอัตราเท่าใด?",
+        options: ["อัตราร้อยละ 3", "อัตราร้อยละ 1", "อัตราร้อยละ 5", "อัตราร้อยละ 2"],
+        correctAnswer: "อัตราร้อยละ 3",
+        explanation: "ตามคำสั่งกรมสรรพากรที่ ท.ป. 4/2528 กำหนดให้อัตราภาษีหัก ณ ที่จ่ายสำหรับการจ่ายค่าบริการหรือค่าจ้างทำของอยู่ที่ร้อยละ 3"
+      }
+      // 💡 คุณสามารถเปิดหน้านี้เพื่อพิมพ์เพิ่มข้อสอบข้อที่ 6-20 ต่อท้ายตรงนี้ได้ตลอดเวลาเลยครับ!
+    ];
 
-    let allData = [];
     let filteredData = [];
     let currentIndex = 0;
     let currentCategoryName = "";
@@ -620,65 +652,8 @@
 
     window.onload = function() {
       document.body.addEventListener('click', initAudio, { once: true });
-      fetchCSVData();
+      generateDynamicMenu();
     };
-
-    function fetchCSVData() {
-      fetch(CSV_URL)
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-          // ใช้ TextDecoder บังคับถอดรหัสเป็น UTF-8 เสมอ ป้องกันภาษาเพี้ยน
-          let decoder = new TextDecoder('utf-8');
-          let text = decoder.decode(buffer);
-          parseCSV(text);
-          generateDynamicMenu();
-        })
-        .catch(err => {
-          const errMsg = '<div style="color:var(--text-muted); font-size:13px;">โหลดข้อสอบล้มเหลว ตรวจสอบการตั้งค่าแชร์ลิงก์</div>';
-          document.getElementById('normal-menu-list').innerHTML = errMsg;
-          document.getElementById('shuffle-menu-list').innerHTML = errMsg;
-        });
-    }
-
-    function parseCSV(text) {
-      let lines = [];
-      let row = [""];
-      let inQuotes = false;
-
-      // ระบบแกะข้อมูล CSV อัจฉริยะ รองรับข้อความที่มีการขึ้นบรรทัดใหม่ในช่องสี่เหลี่ยมเดี่ยว
-      for (let i = 0; i < text.length; i++) {
-        let c = text[i];
-        let next = text[i+1];
-        if (c === '"') {
-          if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
-          else { inQuotes = !inQuotes; }
-        } else if (c === ',' && !inQuotes) {
-          row.push('');
-        } else if ((c === '\r' || c === '\n') && !inQuotes) {
-          if (c === '\r' && next === '\n') { i++; }
-          lines.push(row);
-          row = [''];
-        } else {
-          row[row.length - 1] += c;
-        }
-      }
-      if (row.length > 1 || row[0] !== '') lines.push(row);
-      if (lines.length <= 1) return;
-
-      allData = [];
-      for (let i = 1; i < lines.length; i++) {
-        let r = lines[i];
-        if (r.length < 2 || !r[1] || r[1].trim() === "") continue; 
-        
-        let cat = r[0] ? r[0].trim() : "ทั่วไป";
-        let q = r[1] ? r[1].trim() : "";
-        let opts = [r[2], r[3], r[4], r[5]].filter(o => o && o.trim() !== "");
-        let ans = r[6] ? r[6].trim() : "";
-        let exp = r[7] ? r[7].trim() : "";
-
-        allData.push({ category: cat, question: q, options: opts, correctAnswer: ans, explanation: exp });
-      }
-    }
 
     function generateDynamicMenu() {
       const normalContainer = document.getElementById('normal-menu-list');
