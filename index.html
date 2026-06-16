@@ -435,13 +435,25 @@
       border: 1px solid var(--border-color);
       padding: 12px 16px;
     }
+    
+    .loading-view {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
     
-    <div id="menu-area" class="menu-view">
+    <div id="loading-area" class="loading-view">
+      <h3 style="font-weight: 500; color: var(--text-main);">🔄 กำลังดาวน์โหลดข้อสอบล่าสุดจาก Google Sheets...</h3>
+    </div>
+    
+    <div id="menu-area" class="menu-view" style="display: none;">
       <h2 class="menu-title">คลังข้อสอบกฎหมายภาษี</h2>
       <p class="menu-subtitle">ฝึกฝนทบทวนและทำแบบทดสอบกฎหมายประจำวัน</p>
       
@@ -480,7 +492,7 @@
               <div class="score-badge" id="live-score">คะแนน: 0</div>
             </div>
           </div>
-          <div class="question-text" id="question-text">กำลังดึงโจทย์...</div>
+          <div class="question-text" id="question-text">กำลังโหลด...</div>
           
           <ul class="options-list" id="options-container"></ul>
           
@@ -514,46 +526,10 @@
   </div>
 
   <script>
-    // 📦 ฝังคลังข้อสอบทั้งหมดไว้ในหน้าเว็บโดยตรง 100% (เบราว์เซอร์ไม่มีสิทธิ์บล็อก)
-    const allData = [
-      {
-        category: "ประมวลรัษฎากร",
-        question: "ใครเป็นผู้มีหน้าที่เสียภาษีเงินได้บุคคลธรรมดา?",
-        options: ["ผู้มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว", "บริษัทจำกัด", "ห้างหุ้นส่วนสามัญนิติบุคคล", "มูลนิธิที่ประกอบกิจการมีรายได้"],
-        correctAnswer: "ผู้มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว",
-        explanation: "ตามมาตรา 56 แห่งประมวลรัษฎากร บุคคลทุกคนที่มีเงินได้พึงประเมินเกิดขึ้นในปีภาษีที่ล่วงมาแล้ว มีหน้าที่ต้องยื่นแบบแสดงรายการภาษี"
-      },
-      {
-        category: "ประมวลรัษฎากร",
-        question: "เงินได้พึงประเมินประเภทที่ 1 (มาตรา 40(1)) คือเงินได้ประเภทใด?",
-        options: ["เงินได้เนื่องจากการจ้างแรงงาน เช่น เงินเดือน ค่าจ้าง", "เงินได้จากค่าสิทธิหรือลิขสิทธิ์", "เงินได้จากการให้เช่าทรัพย์สิน", "เงินได้จากวิชาชีพอิสระ"],
-        correctAnswer: "เงินได้เนื่องจากการจ้างแรงงาน เช่น เงินเดือน ค่าจ้าง",
-        explanation: "มาตรา 40(1) คือเงินได้เนื่องจากการจ้างแรงงาน ไม่ว่าจะเป็นเงินเดือน ค่าจ้าง โบนัส เบี้ยเลี้ยง หรือเงินอื่นใดที่ได้เนื่องจากการทำงานให้นายจ้าง"
-      },
-      {
-        category: "ภาษีมูลค่าเพิ่ม (VAT)",
-        question: "ผู้ประกอบการที่มีรายรับจากการขายสินค้าหรือให้บริการเกินกว่าเท่าใดต่อปี จึงมีหน้าที่ต้องจดทะเบียนภาษีมูลค่าเพิ่ม?",
-        options: ["เกิน 1,800,000 บาท", "เกิน 1,200,000 บาท", "เกิน 2,000,000 บาท", "เกิน 1,500,000 บาท"],
-        correctAnswer: "เกิน 1,800,000 บาท",
-        explanation: "พระราชกฤษฎีกาออกตามความในประมวลรัษฎากร กำหนดมูลค่าของฐานภาษีสำหรับกิจการขนาดย่อมไว้ที่ 1.8 ล้านบาทต่อปี"
-      },
-      {
-        category: "ภาษีมูลค่าเพิ่ม (VAT)",
-        question: "การประกอบกิจการในข้อใดต่อไปนี้ ได้รับยกเว้นภาษีมูลค่าเพิ่มตามกฎหมาย?",
-        options: ["การขายพืชผลทางการเกษตรภายในราชอาณาจักร", "การขายเสื้อผ้าสำเร็จรูป", "การให้บริการรับเหมาก่อสร้างอาคาร", "การขายเครื่องใช้ไฟฟ้า"],
-        correctAnswer: "การขายพืชผลทางการเกษตรภายในราชอาณาจักร",
-        explanation: "มาตรา 81(1)(ก) กำหนดให้การขายพืชผลทางการเกษตร ข้าวสาร ธัญพืช สัตว์ทั้งหลาย ทั้งที่สดหรือรักษาไว้ไม่ให้เสีย ได้รับยกเว้น VAT"
-      },
-      {
-        category: "ภาษีหัก ณ ที่จ่าย",
-        question: "การจ่ายค่าจ้างทำของหรือค่าบริการให้แก่บริษัทจำกัดในประเทศไทย ผู้จ่ายเงินมีหน้าที่หักภาษี ณ ที่จ่ายในอัตราเท่าใด?",
-        options: ["อัตราร้อยละ 3", "อัตราร้อยละ 1", "อัตราร้อยละ 5", "อัตราร้อยละ 2"],
-        correctAnswer: "อัตราร้อยละ 3",
-        explanation: "ตามคำสั่งกรมสรรพากรที่ ท.ป. 4/2528 กำหนดให้อัตราภาษีหัก ณ ที่จ่ายสำหรับการจ่ายค่าบริการหรือค่าจ้างทำของอยู่ที่ร้อยละ 3"
-      }
-      // 💡 คุณสามารถเปิดหน้านี้เพื่อพิมพ์เพิ่มข้อสอบข้อที่ 6-20 ต่อท้ายตรงนี้ได้ตลอดเวลาเลยครับ!
-    ];
+    // 🔗 🛠️ วางลิงก์ CSV จาก Google Sheets ของคุณแทนที่ในเครื่องหมายคำพูดด้านล่างนี้ได้เลยครับ!
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbkDPY9eFM_vtttQ9Yd2VP5cs2GeSJyfhuzfn6qYgRv5tAEjGOpIIZgRLj5qk0CyRB_GTo22l65PQE/pub?gid=0&single=true&output=csv";
 
+    let allData = [];
     let filteredData = [];
     let currentIndex = 0;
     let currentCategoryName = "";
@@ -580,62 +556,41 @@
         initAudio();
         if (!audioCtx) return;
         const now = audioCtx.currentTime;
-
         if (type === 'correct') {
-          let osc = audioCtx.createOscillator();
-          let gain = audioCtx.createGain();
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(587.33, now); 
-          osc.frequency.setValueAtTime(880, now + 0.08); 
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); osc.frequency.setValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
           osc.start(now); osc.stop(now + 0.35);
         } else if (type === 'wrong') {
-          let osc = audioCtx.createOscillator();
-          let gain = audioCtx.createGain();
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(180, now);
-          osc.frequency.linearRampToValueAtTime(110, now + 0.3);
-          gain.gain.setValueAtTime(0.12, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now); osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+          gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
           osc.start(now); osc.stop(now + 0.35);
         } else if (type === 'fire') {
-          let osc = audioCtx.createOscillator();
-          let gain = audioCtx.createGain();
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, now); 
-          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12); 
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now); osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12);
+          gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
           osc.start(now); osc.stop(now + 0.15);
         } else if (type === 'tada') {
           const notes = [261.63, 329.63, 392.00, 523.25];
           notes.forEach(freq => {
-            let osc1 = audioCtx.createOscillator();
-            let gain1 = audioCtx.createGain();
-            osc1.type = 'triangle';
-            osc1.frequency.setValueAtTime(freq, now);
+            let osc1 = audioCtx.createOscillator(); let gain1 = audioCtx.createGain();
+            osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, now);
             osc1.connect(gain1); gain1.connect(audioCtx.destination);
-            gain1.gain.setValueAtTime(0.08, now);
-            gain1.gain.linearRampToValueAtTime(0.001, now + 0.15);
+            gain1.gain.setValueAtTime(0.08, now); gain1.gain.linearRampToValueAtTime(0.001, now + 0.15);
             osc1.start(now); osc1.stop(now + 0.15);
           });
           setTimeout(() => {
             const finalNow = audioCtx.currentTime;
             notes.forEach(freq => {
-              let osc2 = audioCtx.createOscillator();
-              let gain2 = audioCtx.createGain();
-              osc2.type = 'sawtooth';
-              osc2.frequency.setValueAtTime(freq * 1.2, finalNow);
-              let filter = audioCtx.createBiquadFilter();
-              filter.type = 'lowpass';
-              filter.frequency.setValueAtTime(1200, finalNow);
+              let osc2 = audioCtx.createOscillator(); let gain2 = audioCtx.createGain();
+              osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 1.2, finalNow);
+              let filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(1200, finalNow);
               osc2.connect(filter); filter.connect(gain2); gain2.connect(audioCtx.destination);
-              gain2.gain.setValueAtTime(0.1, finalNow);
-              gain2.gain.exponentialRampToValueAtTime(0.001, finalNow + 0.8);
+              gain2.gain.setValueAtTime(0.1, finalNow); gain2.gain.exponentialRampToValueAtTime(0.001, finalNow + 0.8);
               osc2.start(finalNow); osc2.stop(finalNow + 0.8);
             });
           }, 150);
@@ -652,8 +607,70 @@
 
     window.onload = function() {
       document.body.addEventListener('click', initAudio, { once: true });
-      generateDynamicMenu();
+      fetchCSVData();
     };
+
+    // 🔄 ฟังก์ชันแปลงข้อมูลแบบ CSV ไร้ปัญหาเบราว์เซอร์บล็อก
+    function fetchCSVData() {
+      if(SHEET_CSV_URL === "วางลิงก์_CSV_ตรงนี้" || SHEET_CSV_URL.trim() === "") {
+        document.getElementById('loading-area').innerHTML = "<h3 style='color:#ef4444;'>⚠️ ยังไม่ได้วางลิงก์ CSV ในโค้ดบรรทัดที่ 373 ครับ</h3>";
+        return;
+      }
+      
+      fetch(SHEET_CSV_URL)
+        .then(response => response.text())
+        .then(text => {
+          parseCSV(text);
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('loading-area').innerHTML = "<h3 style='color:#ef4444;'>❌ โหลดข้อมูลไม่สำเร็จ กรุณาเช็กการตั้งค่าแชร์ลิงก์ CSV ครับ</h3>";
+        });
+    }
+
+    function parseCSV(csvText) {
+      let lines = [];
+      let row = [""];
+      let inQuotes = false;
+
+      for (let i = 0; i < csvText.length; i++) {
+        let c = csvText[i];
+        let next = csvText[i+1];
+        if (c === '"') {
+          if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { inQuotes = !inQuotes; }
+        } else if (c === ',' && !inQuotes) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (c === '\r' && next === '\n') { i++; }
+          lines.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') lines.push(row);
+      if (lines.length <= 1) return;
+
+      allData = [];
+      // วิ่งข้ามหัวตารางแถวแรก (i = 1)
+      for (let i = 1; i < lines.length; i++) {
+        let r = lines[i];
+        if (r.length < 7 || !r[0] || r[0].trim() === "") continue;
+        
+        allData.push({
+          category: r[0].trim(),
+          question: r[1].trim(),
+          options: [r[2].trim(), r[3].trim(), r[4].trim(), r[5].trim()],
+          correctAnswer: r[6].trim(),
+          explanation: r[7] ? r[7].trim() : ""
+        });
+      }
+
+      document.getElementById('loading-area').style.display = 'none';
+      document.getElementById('menu-area').style.display = 'block';
+      generateDynamicMenu();
+    }
 
     function generateDynamicMenu() {
       const normalContainer = document.getElementById('normal-menu-list');
