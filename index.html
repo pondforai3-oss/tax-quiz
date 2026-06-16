@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คลังข้อสอบกฎหมายภาษี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #4b5563;
+      --border-color: #e5e7eb;
+      --success-color: #10b981;
+      --success-light: #ecfdf5;
+      --wrong-color: #ef4444;
+      --wrong-light: #fef2f2;
+      --theme-color: #4f46e5;
+      --theme-light: #eef2ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Prompt', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .menu-view {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .menu-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    .menu-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .timer-toggle-box {
+      background-color: #f9fafb;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timer-toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-toggle-label span {
+      font-size: 11px;
+      color: var(--wrong-color);
+      background-color: var(--wrong-light);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px; width: 18px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #f59e0b;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .mode-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      margin-top: 16px;
+      margin-bottom: 10px;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 35vh;
+      overflow-y: auto;
+      padding: 2px;
+      margin-bottom: 16px;
+    }
+
+    .menu-btn {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      font-size: 13.5px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .menu-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .badge-count {
+      font-size: 11px;
+      background-color: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: var(--text-muted);
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--theme-color);
+      transition: width 0.4s ease;
+    }
+
+    .timer-bar-container {
+      width: 100%;
+      height: 4px;
+      background-color: #f3f4f6;
+      margin-top: -18px;
+      margin-bottom: 24px;
+      display: none;
+      overflow: hidden;
+    }
+
+    .timer-bar-fill {
+      height: 100%;
+      width: 100%;
+      background-color: #f59e0b;
+    }
+
+    .quiz-header-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .question-number {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--theme-color);
+      letter-spacing: 0.5px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .streak-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: none;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    .score-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background-color: var(--theme-light);
+      color: var(--theme-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .tiktok-screenshot-area {
+      width: 100%;
+      max-width: 420px;
+      background-color: var(--bg-color);
+      padding: 10px 0px 14px 0px; 
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .quiz-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-color);
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .question-text {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .options-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-item {
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      font-weight: 400;
+      background-color: var(--card-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-item.selectable:hover {
+      border-color: var(--theme-color);
+      background-color: var(--theme-light);
+    }
+
+    .option-item.correct {
+      border-color: var(--success-color) !important;
+      background-color: var(--success-light) !important;
+      color: #065f46;
+      font-weight: 500;
+    }
+
+    .option-item.wrong {
+      border-color: var(--wrong-color) !important;
+      background-color: var(--wrong-light) !important;
+      color: #991b1b;
+    }
+
+    .option-item.faded {
+      opacity: 0.6;
+    }
+
+    .explanation-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      background-color: #f9fafb;
+      border: 1px dashed #d1d5db;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 40px 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .summary-icon {
+      font-size: 54px;
+      margin-bottom: 12px;
+    }
+
+    .summary-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .rank-badge-box {
+      display: inline-block;
+      margin: 10px auto 18px auto;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      color: #fcd34d;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(49, 46, 129, 0.2);
+      border: 1px solid #fcd34d;
+    }
+
+    .summary-score-box {
+      font-size: 44px;
+      font-weight: 600;
+      color: var(--theme-color);
+      margin: 10px 0px;
+    }
+
+    .summary-score-box span {
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    .summary-info-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-prev {
+      background-color: #e5e7eb;
+      color: var(--text-muted);
+    }
+
+    .btn-prev:disabled {
+      background-color: #f3f4f6;
+      color: #9ca3af;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .btn-next {
+      background-color: #111827;
+      color: white;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .btn-home {
+      background-color: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <div id="menu-area" class="menu-view">
+      <h2 class="menu-title">คลังข้อสอบกฎหมายภาษี</h2>
+      <p class="menu-subtitle">ฝึกฝนทบทวนและทำแบบทดสอบกฎหมายประจำวัน</p>
+      
+      <div class="timer-toggle-box">
+        <div class="timer-toggle-label">
+          ⏱️ เปิดระบบจับเวลาถอยหลัง <span>20 วิ/ข้อ</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="timer-toggle-input" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="mode-section-title">📝 โหมดตะลุยข้อสอบ (ตามลำดับชีต)</div>
+      <div id="normal-menu-list" class="menu-list">
+        <div style="color:var(--text-muted); font-size:13px;">กำลังโหลดข้อสอบจากคลัง...</div>
+      </div>
+
+      <div class="mode-section-title">🔀 โหมดท้าทาย (ระบบสุ่มโจทย์)</div>
+      <div id="shuffle-menu-list" class="menu-list">
+        <div style="color:var(--text-muted); font-size:13px;">กำลังโหลดข้อสอบจากคลัง...</div>
+      </div>
+    </div>
+
+    <div id="quiz-area" style="display: none;">
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      
+      <div class="timer-bar-container" id="timer-bar-container">
+        <div class="timer-bar-fill" id="timer-bar-fill"></div>
+      </div>
+      
+      <div class="tiktok-screenshot-area">
+        <div class="quiz-card" id="quiz-card-box">
+          <div class="quiz-header-meta">
+            <div class="question-number" id="question-idx">QUESTION 1</div>
+            <div class="header-badges">
+              <div class="streak-badge" id="streak-badge">⚡ COMBO x0</div>
+              <div class="score-badge" id="live-score">คะแนน: 0</div>
+            </div>
+          </div>
+          <div class="question-text" id="question-text">กำลังดึงโจทย์...</div>
+          
+          <ul class="options-list" id="options-container"></ul>
+          
+          <div class="explanation-box" id="explanation-box" style="display: none;">
+            <strong>💡 เกร็ดความรู้เพิ่มเติม:</strong> <span id="explanation-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 16px;" id="progress-text">ข้อที่ 1 จาก 5</div>
+
+      <div class="footer-actions">
+        <button class="btn btn-home" onclick="goHome()">หน้าแรก</button>
+        <button class="btn btn-prev" id="prev-btn" onclick="prevQuestion()">ก่อนหน้า</button>
+        <button class="btn btn-next" id="next-btn" onclick="nextQuestion()">ข้อถัดไป</button>
+      </div>
+    </div>
+
+    <div id="summary-area" class="summary-card" style="display: none;">
+      <div class="summary-icon" id="summary-rank-icon">🎺</div>
+      <h2 class="summary-title" id="summary-cat-title">สรุปผลคะแนน</h2>
+      
+      <div class="rank-badge-box" id="rank-badge-text">ยศ: กำลังคำนวณ...</div>
+      
+      <div class="summary-score-box" id="final-score-text">0 <span>/ 5 คะแนน</span></div>
+      <div class="summary-info-text" id="summary-max-streak-text">ทำคอมโบสูงสุด: 0 ข้อต่อเนื่อง ⚡</div>
+      
+      <button class="btn btn-next" style="width:100%;" onclick="goHome()">กลับสู่หน้าแรก</button>
+    </div>
+    
+  </div>
+
+  <script>
+    // ⚠️ นำลิงก์ CSV จากข้อที่ 1 มาวางแทนที่ข้อความในเครื่องหมายคำพูดด้านล่างนี้เลยครับ
+    const CSV_URL = "ใส่ลิงก์ CSV ของคุณที่นี่";
+
+    let allData = [];
+    let filteredData = [];
+    let currentIndex = 0;
+    let currentCategoryName = "";
+    let hasAnswered = false; 
+    let isShuffleMode = false; 
+    
+    let totalScore = 0;
+    let answeredQuestions = {}; 
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let isTimerEnabled = true;
+    const FIXED_TIME = 20; 
+    let timerInterval = null;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); 
+          osc.frequency.setValueAtTime(880, now + 0.08); 
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.start(now); osc.stop(now + 0.35);
+        } else if (type === 'wrong') {
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.start(now); osc.stop(now + 0.35);
+        } else if (type === 'fire') {
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now); 
+          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12); 
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now); osc.stop(now + 0.15);
+        } else if (type === 'tada') {
+          const notes = [261.63, 329.63, 392.00, 523.25];
+          notes.forEach(freq => {
+            let osc1 = audioCtx.createOscillator();
+            let gain1 = audioCtx.createGain();
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(freq, now);
+            osc1.connect(gain1); gain1.connect(audioCtx.destination);
+            gain1.gain.setValueAtTime(0.08, now);
+            gain1.gain.linearRampToValueAtTime(0.001, now + 0.15);
+            osc1.start(now); osc1.stop(now + 0.15);
+          });
+          setTimeout(() => {
+            const finalNow = audioCtx.currentTime;
+            notes.forEach(freq => {
+              let osc2 = audioCtx.createOscillator();
+              let gain2 = audioCtx.createGain();
+              osc2.type = 'sawtooth';
+              osc2.frequency.setValueAtTime(freq * 1.2, finalNow);
+              let filter = audioCtx.createBiquadFilter();
+              filter.type = 'lowpass';
+              filter.frequency.setValueAtTime(1200, finalNow);
+              osc2.connect(filter); filter.connect(gain2); gain2.connect(audioCtx.destination);
+              gain2.gain.setValueAtTime(0.1, finalNow);
+              gain2.gain.exponentialRampToValueAtTime(0.001, finalNow + 0.8);
+              osc2.start(finalNow); osc2.stop(finalNow + 0.8);
+            });
+          }, 150);
+        }
+      } catch (e) { console.log(e); }
+    }
+
+    const themePalettes = [
+      { color: '#0284c7', light: '#f0f9ff' }, { color: '#7c3aed', light: '#f5f3ff' }, 
+      { color: '#0f172a', light: '#f1f5f9' }, { color: '#059669', light: '#ecfdf5' }, 
+      { color: '#ea580c', light: '#fff7ed' }, { color: '#db2777', light: '#fdf2f8' }
+    ];
+    let categoryThemes = {}; 
+
+    window.onload = function() {
+      document.body.addEventListener('click', initAudio, { once: true });
+      fetchCSVData();
+    };
+
+    // ฟังก์ชันดึงและแปลงข้อสอบจาก CSV ของ Google Sheets
+    function fetchCSVData() {
+      fetch(CSV_URL)
+        .then(response => response.text())
+        .then(text => {
+          parseCSV(text);
+          generateDynamicMenu();
+        })
+        .catch(err => {
+          const errMsg = '<div style="color:var(--text-muted); font-size:13px;">โหลดข้อสอบล้มเหลว ตรวจสอบการตั้งค่าแชร์ลิงก์</div>';
+          document.getElementById('normal-menu-list').innerHTML = errMsg;
+          document.getElementById('shuffle-menu-list').innerHTML = errMsg;
+        });
+    }
+
+    function parseCSV(text) {
+      let lines = [];
+      let row = [""];
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        let c = text[i];
+        let next = text[i+1];
+        if (c === '"') {
+          if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { inQuotes = !inQuotes; }
+        } else if (c === ',' && !inQuotes) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (c === '\r' && next === '\n') { i++; }
+          lines.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') lines.push(row);
+      if (lines.length <= 1) return;
+
+      // คอลัมน์อิงตามสตรีมหลัก: category, question, choice1, choice2, choice3, choice4, correctAnswer, explanation
+      let headers = lines[0].map(h => h.trim().toLowerCase());
+      
+      for (let i = 1; i < lines.length; i++) {
+        let r = lines[i];
+        if (r.length < 2 || !r[1]) continue; 
+        
+        let cat = r[0] ? r[0].trim() : "ทั่วไป";
+        let q = r[1] ? r[1].trim() : "";
+        let opts = [r[2], r[3], r[4], r[5]].filter(o => o && o.trim() !== "");
+        let ans = r[6] ? r[6].trim() : "";
+        let exp = r[7] ? r[7].trim() : "";
+
+        allData.push({ category: cat, question: q, options: opts, correctAnswer: ans, explanation: exp });
+      }
+    }
+
+    function generateDynamicMenu() {
+      const normalContainer = document.getElementById('normal-menu-list');
+      const shuffleContainer = document.getElementById('shuffle-menu-list');
+      normalContainer.innerHTML = ''; shuffleContainer.innerHTML = '';
+
+      const categories = [...new Set(allData.map(item => item.category))];
+
+      categories.forEach((cat, index) => {
+        const count = allData.filter(q => q.category === cat).length;
+        const theme = themePalettes[index % themePalettes.length];
+        categoryThemes[cat] = theme;
+
+        const btnNormal = document.createElement('button');
+        btnNormal.className = 'menu-btn';
+        btnNormal.style.borderLeft = `5px solid ${theme.color}`;
+        btnNormal.onclick = function() { startQuiz(cat, false); };
+        btnNormal.innerHTML = `<span>📋 ${cat}</span> <span class="badge-count">${count} ข้อ</span>`;
+        normalContainer.appendChild(btnNormal);
+
+        const btnShuffle = document.createElement('button');
+        btnShuffle.className = 'menu-btn';
+        btnShuffle.style.borderLeft = `5px solid ${theme.color}`;
+        btnShuffle.style.backgroundColor = '#f8fafc';
+        btnShuffle.onclick = function() { startQuiz(cat, true); };
+        btnShuffle.innerHTML = `<span>🔀 [สุ่ม] ${cat}</span> <span class="badge-count">สลับโจทย์</span>`;
+        shuffleContainer.appendChild(btnShuffle);
+      });
+    }
+
+    function startQuiz(category, shuffleOption) {
+      initAudio();
+      currentCategoryName = category;
+      isShuffleMode = shuffleOption;
+      let baseData = allData.filter(q => q.category === category);
+      
+      if (isShuffleMode) {
+        filteredData = baseData.map(q => {
+          let shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+          return { ...q, options: shuffledOptions };
+        }).sort(() => Math.random() - 0.5);
+      } else {
+        filteredData = baseData;
+      }
+      
+      const currentTheme = categoryThemes[category] || { color: '#4f46e5', light: '#eef2ff' };
+      document.documentElement.style.setProperty('--theme-color', currentTheme.color);
+      document.documentElement.style.setProperty('--theme-light', currentTheme.light);
+
+      isTimerEnabled = document.getElementById('timer-toggle-input').checked;
+      currentIndex = 0; totalScore = 0; currentStreak = 0; maxStreak = 0; answeredQuestions = {}; 
+
+      document.getElementById('menu-area').style.display = 'none';
+      document.getElementById('quiz-area').style.display = 'block';
+      showQuestion();
+    }
+
+    function showQuestion() {
+      clearInterval(timerInterval);
+      const currentQuiz = filteredData[currentIndex];
+      const progressPercent = ((currentIndex) / filteredData.length) * 100;
+      document.getElementById('progress-bar').style.width = progressPercent + '%';
+      
+      let modeTag = isShuffleMode ? " [โหมดสุ่ม] • " : " [โหมดเรียงข้อ] • ";
+      document.getElementById('question-idx').innerText = `${currentCategoryName.toUpperCase()}${modeTag}QUESTION ${currentIndex + 1}`;
+      document.getElementById('question-text').innerText = currentQuiz.question;
+      document.getElementById('progress-text').innerText = `ข้อที่ ${currentIndex + 1} จาก ${filteredData.length}`;
+      document.getElementById('live-score').innerText = `คะแนน: ${totalScore}`;
+
+      updateStreakUI(); 
+      document.getElementById('explanation-box').style.display = 'none';
+      document.getElementById('prev-btn').disabled = (currentIndex === 0);
+      document.getElementById('next-btn').innerText = (currentIndex === filteredData.length - 1) ? "ดูสรุปคะแนน" : "ข้อถัดไป";
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      const cachedAnswer = answeredQuestions[currentIndex];
+      hasAnswered = cachedAnswer !== undefined;
+
+      if(currentQuiz.options && currentQuiz.options.length > 0) {
+        currentQuiz.options.forEach((option) => {
+          if(!option || option.trim() === "") return;
+          const li = document.createElement('li');
+          li.innerHTML = `<span>${option}</span><span class="status-icon"></span>`;
+          
+          if (!hasAnswered) {
+            li.className = 'option-item selectable'; 
+            li.onclick = function() {
+              if (!hasAnswered) checkAnswer(li, option, currentQuiz.correctAnswer, currentQuiz.explanation, false);
+            };
+          } else {
+            li.className = 'option-item';
+            const optionText = option.toString().trim();
+            if (optionText === currentQuiz.correctAnswer.trim()) {
+              li.classList.add('correct');
+              li.querySelector('.status-icon').innerHTML = '<span style="color:#10b981; font-weight:bold; margin-left:10px;">✓</span>';
+            } else if (cachedAnswer.isTimeout) {
+              li.classList.add('faded');
+            } else if (optionText === cachedAnswer.selectedText) {
+              li.classList.add('wrong');
+              li.querySelector('.status-icon').innerHTML = '<span style="color:#ef4444; font-weight:bold; margin-left:10px;">✗</span>';
+            } else {
+              li.classList.add('faded');
+            }
+          }
+          optionsContainer.appendChild(li);
+        });
+      }
+
+      if (hasAnswered) {
+        if (currentQuiz.explanation && currentQuiz.explanation.trim() !== "") {
+          document.getElementById('explanation-text').innerText = currentQuiz.explanation;
+          document.getElementById('explanation-box').style.display = 'block';
+        }
+      } else {
+        if (isTimerEnabled) startCountdown();
+        else document.getElementById('timer-bar-container').style.display = 'none';
+      }
+    }
+
+    function startCountdown() {
+      const timerBarContainer = document.getElementById('timer-bar-container');
+      const timerBarFill = document.getElementById('timer-bar-fill');
+      timerBarContainer.style.display = 'block'; timerBarFill.style.width = '100%';
+      timerBarFill.style.backgroundColor = '#f59e0b';
+
+      let totalSteps = (FIXED_TIME * 1000) / 100;
+      let currentStep = totalSteps;
+
+      timerInterval = setInterval(() => {
+        currentStep--;
+        let percentage = (currentStep / totalSteps) * 100;
+        timerBarFill.style.width = percentage + '%';
+        if (percentage < 30) timerBarFill.style.backgroundColor = '#ef4444';
+
+        if (currentStep <= 0) {
+          clearInterval(timerInterval);
+          checkAnswer(null, "", filteredData[currentIndex].correctAnswer, filteredData[currentIndex].explanation, true);
+        }
+      }, 100);
+    }
+
+    function checkAnswer(selectedElement, selectedOption, correctAnswer, explanation, isTimeout) {
+      clearInterval(timerInterval); hasAnswered = true; 
+      const isCorrect = !isTimeout && (selectedOption.toString().trim() === correctAnswer.trim());
+      
+      answeredQuestions[currentIndex] = {
+        selectedText: isTimeout ? "" : selectedOption.toString().trim(),
+        isCorrect: isCorrect, isTimeout: isTimeout
+      };
+
+      if (isCorrect) {
+        totalScore++; currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+        if (currentStreak >= 2) playSound('fire'); else playSound('correct');
+      } else {
+        currentStreak = 0; playSound('wrong');
+      }
+      
+      document.getElementById('live-score').innerText = `คะแนน: ${totalScore}`;
+      updateStreakUI(); 
+
+      const items = document.getElementById('options-container').getElementsByTagName('li');
+      for (let item of items) {
+        item.classList.remove('selectable'); 
+        const itemText = item.querySelector('span').innerText.trim();
+        if (correctAnswer && itemText === correctAnswer.trim()) {
+          item.classList.add('correct');
+          item.querySelector('.status-icon').innerHTML = '<span style="color:#10b981; font-weight:bold; margin-left:10px;">✓</span>';
+        } else if (!isTimeout && item === selectedElement) {
+          item.classList.add('wrong');
+          item.querySelector('.status-icon').innerHTML = '<span style="color:#ef4444; font-weight:bold; margin-left:10px;">✗</span>';
+        } else { item.classList.add('faded'); }
+      }
+
+      if (isTimeout) document.getElementById('question-text').innerHTML = `<span style="color:#ef4444; font-weight:bold;">⏱️ หมดเวลา 20 วินาที!</span><br><br>` + filteredData[currentIndex].question;
+      if (explanation && explanation.trim() !== "") {
+        document.getElementById('explanation-text').innerText = explanation;
+        document.getElementById('explanation-box').style.display = 'block';
+      }
+    }
+
+    function updateStreakUI() {
+      const streakBadge = document.getElementById('streak-badge');
+      if (currentStreak >= 2) { 
+        streakBadge.innerText = `⚡ COMBO x${currentStreak}`;
+        streakBadge.style.display = 'block';
+      } else { streakBadge.style.display = 'none'; }
+    }
+
+    function prevQuestion() { if (currentIndex > 0) { currentIndex--; showQuestion(); } }
+    function nextQuestion() {
+      if (!hasAnswered) { alert("กรุณาเลือกคำตอบก่อนครับ"); return; }
+      if (currentIndex < filteredData.length - 1) { currentIndex++; showQuestion(); } 
+      else { showScoreSummary(); }
+    }
+
+    function calculateRank(score, total) {
+      const percentage = (score / total) * 100;
+      if (percentage === 100) return { name: "เทพเจ้ากฎหมายภาษี 👑", icon: "👑" };
+      if (percentage >= 80) return { name: "ที่ปรึกษาภาษีมือโปร 💼", icon: "💼" };
+      if (percentage >= 50) return { name: "นักวิชาการภาษีหัวไว 🧐", icon: "🧐" };
+      return { name: "เด็กฝึกงานภาษีป้ายแดง 👶", icon: "👶" };
+    }
+
+    function showScoreSummary() {
+      clearInterval(timerInterval);
+      document.getElementById('quiz-area').style.display = 'none';
+      document.getElementById('summary-area').style.display = 'block';
+      playSound('tada');
+
+      let modeText = isShuffleMode ? " (โหมดสุ่มคำถาม)" : " (โหมดเรียงข้อ)";
+      document.getElementById('summary-cat-title').innerText = `ผลคะแนน: ${currentCategoryName}${modeText}`;
+      document.getElementById('final-score-text').innerHTML = `${totalScore} <span>/ ${filteredData.length} คะแนน</span>`;
+      document.getElementById('summary-max-streak-text').innerText = `ทำคอมโบสูงสุดได้: ${maxStreak} ข้อต่อเนื่อง ⚡`;
+
+      const rankResult = calculateRank(totalScore, filteredData.length);
+      document.getElementById('summary-rank-icon').innerText = "🎺";
+      document.getElementById('rank-badge-text').innerText = `ยศ: ${rankResult.name}`;
+    }
+
+    function goHome() {
+      clearInterval(timerInterval);
+      document.getElementById('quiz-area').style.display = 'none';
+      document.getElementById('summary-area').style.display = 'none';
+      document.getElementById('menu-area').style.display = 'block';
+      generateDynamicMenu();
+    }
+  </script>
+</body>
+</html>
