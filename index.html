@@ -518,8 +518,8 @@
   </div>
 
   <script>
-    // ⚠️ นำลิงก์ CSV จากข้อที่ 1 มาวางแทนที่ข้อความในเครื่องหมายคำพูดด้านล่างนี้เลยครับ
-    const CSV_URL = "ใส่ลิงก์ CSV ของคุณที่นี่";
+    // ⚠️ ลิงก์ดึงข้อมูล CSV จาก Google Sheets ของคุณ
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6UuWOfZpS_eD-Ie90ZzV1Nizl6j9ZpXfCq4R9bA9f3_Q6N3Ivx6Xb3Y5jX0_W2e6V_w/pub?output=csv";
 
     let allData = [];
     let filteredData = [];
@@ -623,11 +623,13 @@
       fetchCSVData();
     };
 
-    // ฟังก์ชันดึงและแปลงข้อสอบจาก CSV ของ Google Sheets
     function fetchCSVData() {
       fetch(CSV_URL)
-        .then(response => response.text())
-        .then(text => {
+        .then(response => response.arrayBuffer())
+        .then(buffer => {
+          // ใช้ TextDecoder บังคับถอดรหัสเป็น UTF-8 เสมอ ป้องกันภาษาเพี้ยน
+          let decoder = new TextDecoder('utf-8');
+          let text = decoder.decode(buffer);
           parseCSV(text);
           generateDynamicMenu();
         })
@@ -643,6 +645,7 @@
       let row = [""];
       let inQuotes = false;
 
+      // ระบบแกะข้อมูล CSV อัจฉริยะ รองรับข้อความที่มีการขึ้นบรรทัดใหม่ในช่องสี่เหลี่ยมเดี่ยว
       for (let i = 0; i < text.length; i++) {
         let c = text[i];
         let next = text[i+1];
@@ -662,12 +665,10 @@
       if (row.length > 1 || row[0] !== '') lines.push(row);
       if (lines.length <= 1) return;
 
-      // คอลัมน์อิงตามสตรีมหลัก: category, question, choice1, choice2, choice3, choice4, correctAnswer, explanation
-      let headers = lines[0].map(h => h.trim().toLowerCase());
-      
+      allData = [];
       for (let i = 1; i < lines.length; i++) {
         let r = lines[i];
-        if (r.length < 2 || !r[1]) continue; 
+        if (r.length < 2 || !r[1] || r[1].trim() === "") continue; 
         
         let cat = r[0] ? r[0].trim() : "ทั่วไป";
         let q = r[1] ? r[1].trim() : "";
